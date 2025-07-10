@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  db:
+    image: postgres:15
+    container_name: test_db
+    environment:
+      POSTGRES_DB: test_db
+      POSTGRES_USER: usuario
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U usuario -d test_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Aplicación FastAPI
+  app:
+    build: .
+    container_name: test_app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://usuario:password@db:5432/test_db
+      - EXTERNAL_API_BASE_URL=https://jsonplaceholder.typicode.com
+      - EXTERNAL_API_TIMEOUT=30
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=true
+      - APP_NAME=Test Técnico Backend API
+      - APP_VERSION=1.0.0
+      - PYTHONUNBUFFERED=1
+
+    ports:
+      - "8000:8000"
+    networks:
+      - app_network
+    volumes:
+      - .:/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# Redes
+networks:
+  app_network:
+    driver: bridge
+
+# Volúmenes
+volumes:
+  postgres_data: 

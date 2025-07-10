@@ -78,8 +78,8 @@ Este endpoint cumple con el requisito principal de la prueba técnica:
 
 ```bash
 # Clonar el repositorio
-git clone <repository-url>
-cd test-tecnico-backend
+git clone https://github.com/NicolasHurtado/FastAPI_external_api.git
+cd FastAPI_external_api
 
 # Levantar con Docker Compose
 docker-compose up --build
